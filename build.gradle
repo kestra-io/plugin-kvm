@@ -16,6 +16,7 @@ def isBuildSnapshot = version.toString().endsWith("-SNAPSHOT")
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url "https://download.libvirt.org/maven2/" }
     if (isBuildSnapshot) {
         maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
     }
@@ -40,6 +41,10 @@ dependencies {
     // Platform
     annotationProcessor enforcedPlatform("io.kestra:platform:$kestraVersion")
     implementation enforcedPlatform("io.kestra:platform:$kestraVersion")
+
+    // Libvirt for KVM management
+    implementation 'org.libvirt:libvirt:0.5.3'
+    implementation 'net.java.dev.jna:jna:5.14.0'
 
     // lombok
     annotationProcessor "org.projectlombok:lombok"

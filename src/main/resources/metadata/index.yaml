@@ -1,8 +1,5 @@
-group: io.kestra.plugin.template
-name: "template"
-title: "Template"
-description: "Plugin template for Kestra"
-body: ""
-videos: []
-createdBy: "Kestra Core Team"
-managedBy: "Kestra Core Team"
+group: io.kestra.plugin.kvm
+name: "plugin-kvm"
+title: "KVM"
+description: "Manage KVM virtual machines via Libvirt"
+created: 2025-01-01

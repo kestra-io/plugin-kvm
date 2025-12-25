@@ -7,14 +7,15 @@ USER root
 WORKDIR /root
 
 RUN apt update && apt install -y \
-  apt-transport-https ca-certificates gnupg curl wget git zip unzip less zsh net-tools iputils-ping jq lsof
+  apt-transport-https ca-certificates gnupg curl wget git zip unzip less zsh net-tools iputils-ping jq lsof \
+  libvirt-clients libvirt-dev
 
 ENV HOME="/root"
 
 # --------------------------------------
 # Git
 # --------------------------------------
-# Need to add the devcontainer workspace folder as a safe directory to enable git 
+# Need to add the devcontainer workspace folder as a safe directory to enable git
 # version control system to be enabled in the containers file system.
 RUN git config --global --add safe.directory "/workspaces/plugin-template"
 # --------------------------------------
@@ -57,7 +58,7 @@ ENV KESTRA_PLUGINS_PATH="/workspaces/plugin-template/local/plugins"
 # --------------------------------------
 
 # --------------------------------------
-# SSH 
+# SSH
 # --------------------------------------
 RUN mkdir -p ~/.ssh
 RUN touch ~/.ssh/config
