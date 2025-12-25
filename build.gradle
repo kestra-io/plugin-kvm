@@ -9,6 +9,7 @@ plugins {
     id 'signing'
     id "com.github.ben-manes.versions" version "0.53.0"
     id 'net.researchgate.release' version '3.1.0'
+    id 'checkstyle'
 }
 
 def isBuildSnapshot = version.toString().endsWith("-SNAPSHOT")
@@ -49,6 +50,16 @@ dependencies {
     annotationProcessor group: "io.kestra", name: "processor", version: kestraVersion
     compileOnly group: "io.kestra", name: "core", version: kestraVersion
     compileOnly group: "io.kestra", name: "script", version: kestraVersion
+
+    // Libvirt Java Bindings (must be bundled in the shadow JAR)
+    implementation group: 'org.libvirt', name: 'libvirt', version: '0.5.1'
+
+    // Testing
+    testImplementation group: 'io.kestra', name: 'core', version: kestraVersion
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testImplementation "org.hamcrest:hamcrest:2.2"
 }
 
 
@@ -57,6 +68,7 @@ dependencies {
  **********************************************************************************************************************/
 test {
     useJUnitPlatform()
+    systemProperty "jna.library.path", "/opt/homebrew/lib"
 }
 
 testlogger {
