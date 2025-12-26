@@ -1,9 +1,9 @@
 package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.conditions.ConditionContext;
 import io.kestra.core.models.executions.Execution;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.triggers.AbstractTrigger;
 import io.kestra.core.models.triggers.PollingTriggerInterface;
 import io.kestra.core.models.triggers.TriggerContext;
@@ -33,17 +33,15 @@ public class VmEventTrigger extends AbstractTrigger
     @Builder.Default
     private Duration interval = Duration.ofMinutes(1);
 
-    @PluginProperty(dynamic = true)
-    protected String uri;
+    protected Property<String> uri;
 
-    @PluginProperty(dynamic = true)
-    private String name;
+    private Property<String> name;
 
     @Override
     public Optional<Execution> evaluate(ConditionContext conditionContext, TriggerContext context) throws Exception {
         RunContext runContext = conditionContext.getRunContext();
-        String renderedUri = runContext.render(this.uri);
-        String renderedName = runContext.render(this.name);
+        String renderedUri = runContext.render(this.uri).as(String.class).orElse(null);
+        String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
 
         try (LibvirtConnection connection = new LibvirtConnection(renderedUri)) {
             Connect conn = connection.get();

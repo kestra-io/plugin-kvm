@@ -1,7 +1,7 @@
 package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import java.time.Duration;
@@ -22,32 +22,32 @@ import org.libvirt.DomainInfo.DomainState;
 @Getter
 @Plugin
 public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Output> {
-    @PluginProperty(dynamic = true)
-    private String name;
+    private Property<String> name;
 
-    @PluginProperty
     @Builder.Default
-    private Boolean waitForRunning = false;
+    private Property<Boolean> waitForRunning = Property.ofValue(false);
 
-    @PluginProperty
     @Builder.Default
-    private Duration timeToWait = Duration.ofSeconds(60);
+    private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            Domain domain = conn.domainLookupByName(runContext.render(name));
+            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
+            Domain domain = conn.domainLookupByName(renderedName);
             DomainInfo info = domain.getInfo();
 
             if (info.state == DomainState.VIR_DOMAIN_RUNNING) {
-                runContext.logger().info("VM {} is already running. Skipping start.", name);
+                runContext.logger().info("VM {} is already running. Skipping start.", renderedName);
             } else {
                 domain.create();
-                runContext.logger().info("VM {} started successfully.", name);
+                runContext.logger().info("VM {} started successfully.", renderedName);
 
-                if (Boolean.TRUE.equals(waitForRunning)) {
-                    long end = System.currentTimeMillis() + timeToWait.toMillis();
+                if (runContext.render(this.waitForRunning).as(Boolean.class).orElse(false)) {
+                    Duration waitDuration = runContext.render(this.timeToWait).as(Duration.class)
+                            .orElse(Duration.ofSeconds(60));
+                    long end = System.currentTimeMillis() + waitDuration.toMillis();
                     boolean success = false;
 
                     while (System.currentTimeMillis() < end) {
@@ -72,7 +72,8 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
 
                     if (!success) {
                         throw new Exception(
-                                "Timeout waiting for VM to reach RUNNING state after " + timeToWait.getSeconds() + "s");
+                                "Timeout waiting for VM to reach RUNNING state after " + waitDuration.getSeconds()
+                                        + "s");
                     }
                 }
             }

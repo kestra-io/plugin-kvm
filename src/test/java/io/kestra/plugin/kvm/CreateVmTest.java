@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
+import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -26,10 +27,10 @@ class CreateVmTest {
         RunContext runContext = runContextFactory.of();
 
         CreateVm task = CreateVm.builder()
-                .uri("test:///default")
-                .name("unit-test-vm")
-                .xmlDefinition(XML)
-                .startAfterCreate(true)
+                .uri(Property.ofValue("test:///default"))
+                .name(Property.ofValue("unit-test-vm"))
+                .xmlDefinition(Property.ofValue(XML))
+                .startAfterCreate(Property.ofValue(true))
                 .build();
 
         // First run: Create

@@ -1,7 +1,7 @@
 package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import java.time.Duration;
@@ -21,41 +21,40 @@ import org.libvirt.DomainInfo.DomainState;
 @Getter
 @Plugin
 public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Output> {
-    @PluginProperty(dynamic = true)
-    private String name;
+    private Property<String> name;
 
-    @PluginProperty
     @Builder.Default
-    private Boolean force = false;
+    private Property<Boolean> force = Property.ofValue(false);
 
-    @PluginProperty
     @Builder.Default
-    private Boolean waitForStopped = false;
+    private Property<Boolean> waitForStopped = Property.ofValue(false);
 
-    @PluginProperty
     @Builder.Default
-    private Duration timeToWait = Duration.ofSeconds(60);
+    private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            Domain domain = conn.domainLookupByName(runContext.render(runContext.render(name)));
+            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
+            Domain domain = conn.domainLookupByName(renderedName);
 
             if (domain.getInfo().state == DomainState.VIR_DOMAIN_SHUTOFF) {
-                runContext.logger().info("VM {} is already stopped. Skipping stop.", name);
+                runContext.logger().info("VM {} is already stopped. Skipping stop.", renderedName);
             } else {
                 // Use destroy() for hard power off or shutdown() for force
-                if (Boolean.TRUE.equals(force)) {
-                    runContext.logger().info("Calling destroy on {}.", name);
+                if (runContext.render(this.force).as(Boolean.class).orElse(false)) {
+                    runContext.logger().info("Calling destroy on {}.", renderedName);
                     domain.destroy();
                 } else {
-                    runContext.logger().info("Calling shutdown on {}.", name);
+                    runContext.logger().info("Calling shutdown on {}.", renderedName);
                     domain.shutdown();
                 }
 
-                if (Boolean.TRUE.equals(waitForStopped)) {
-                    long end = System.currentTimeMillis() + timeToWait.toMillis();
+                if (runContext.render(this.waitForStopped).as(Boolean.class).orElse(false)) {
+                    Duration waitDuration = runContext.render(this.timeToWait).as(Duration.class)
+                            .orElse(Duration.ofSeconds(60));
+                    long end = System.currentTimeMillis() + waitDuration.toMillis();
                     boolean success = false;
 
                     while (System.currentTimeMillis() < end) {
@@ -79,11 +78,12 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
 
                     if (!success) {
                         throw new Exception(
-                                "Timeout waiting for VM to reach RUNNING state after " + timeToWait.getSeconds() + "s");
+                                "Timeout waiting for VM to reach RUNNING state after " + waitDuration.getSeconds()
+                                        + "s");
                     }
                 }
 
-                runContext.logger().info("Stop signal sent to VM {}.", name);
+                runContext.logger().info("Stop signal sent to VM {}.", renderedName);
             }
 
             return Output.builder()

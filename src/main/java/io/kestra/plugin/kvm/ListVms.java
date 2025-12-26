@@ -1,7 +1,7 @@
 package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import java.util.List;
@@ -23,8 +23,7 @@ import org.libvirt.Domain;
 @Plugin
 public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Output> {
 
-    @PluginProperty
-    private String statusFilter;
+    private Property<String> statusFilter;
 
     @Override
     public Output run(RunContext runContext) throws Exception {
@@ -54,9 +53,10 @@ public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Out
                         .build());
             }
 
-            if (statusFilter != null && !statusFilter.isEmpty()) {
+            String filter = runContext.render(this.statusFilter).as(String.class).orElse(null);
+            if (filter != null && !filter.isEmpty()) {
                 vms = vms.stream()
-                        .filter(v -> v.getState().equalsIgnoreCase(statusFilter))
+                        .filter(v -> v.getState().equalsIgnoreCase(filter))
                         .collect(Collectors.toList());
             }
 

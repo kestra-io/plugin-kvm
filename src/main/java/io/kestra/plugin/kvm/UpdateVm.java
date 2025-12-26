@@ -2,7 +2,7 @@ package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import lombok.Builder;
@@ -30,22 +30,19 @@ import org.libvirt.DomainInfo.DomainState;
                 """)
 })
 public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.Output> {
-    @PluginProperty(dynamic = true)
-    private String name;
+    private Property<String> name;
 
-    @PluginProperty(dynamic = true)
-    private String xmlDefinition;
+    private Property<String> xmlDefinition;
 
-    @PluginProperty
     @Builder.Default
-    private Boolean restart = false;
+    private Property<Boolean> restart = Property.ofValue(false);
 
     @Override
-    public UpdateVm.Output run(RunContext runContext) throws Exception {
+    public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String renderedXml = runContext.render(xmlDefinition);
-            String renderedName = runContext.render(name);
+            String renderedXml = runContext.render(this.xmlDefinition).as(String.class).orElseThrow();
+            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
 
             // 1. Update the persistent definition
             // domainDefineXML is the standard way to update an existing domain's config
@@ -54,7 +51,7 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
 
             // 2. Handle Restart logic
             boolean wasRestarted = false;
-            if (Boolean.TRUE.equals(restart)) {
+            if (runContext.render(this.restart).as(Boolean.class).orElse(false)) {
                 DomainState state = domain.getInfo().state;
                 if (state == DomainState.VIR_DOMAIN_RUNNING || state == DomainState.VIR_DOMAIN_PAUSED) {
                     runContext.logger().info("Restarting VM {} to apply changes...", renderedName);

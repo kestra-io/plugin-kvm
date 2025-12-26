@@ -1,6 +1,6 @@
 package io.kestra.plugin.kvm;
 
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
 import java.time.Duration;
@@ -19,11 +19,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Getter
 public abstract class AbstractKvmTask extends Task {
-    @PluginProperty(dynamic = true)
-    protected String uri;
+    protected Property<String> uri;
 
-    @PluginProperty
-    protected Duration connectionTimeout;
+    protected Property<Duration> connectionTimeout;
 
     /**
      * Creates a connection to the Libvirt instance.
@@ -33,6 +31,7 @@ public abstract class AbstractKvmTask extends Task {
      * @throws Exception If an error occurs while connecting.
      */
     protected LibvirtConnection getConnection(RunContext runContext) throws Exception {
-        return new LibvirtConnection(runContext.render(this.uri));
+        String renderedUri = runContext.render(this.uri).as(String.class).orElse(null);
+        return new LibvirtConnection(renderedUri);
     }
 }

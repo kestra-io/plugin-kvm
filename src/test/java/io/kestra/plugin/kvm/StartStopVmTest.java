@@ -3,6 +3,7 @@ package io.kestra.plugin.kvm;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -21,10 +22,10 @@ class StartStopVmTest {
 
         // 1. Start the default 'test' VM provided by the driver
         StartVm startTask = StartVm.builder()
-                .uri("test:///default")
-                .name("test")
-                .waitForRunning(true)
-                .timeToWait(Duration.ofSeconds(10))
+                .uri(Property.ofValue("test:///default"))
+                .name(Property.ofValue("test"))
+                .waitForRunning(Property.ofValue(true))
+                .timeToWait(Property.ofValue(Duration.ofSeconds(10)))
                 .build();
 
         StartVm.Output startOutput = startTask.run(runContext);
@@ -32,9 +33,9 @@ class StartStopVmTest {
 
         // 2. Stop the VM
         StopVm stopTask = StopVm.builder()
-                .uri("test:///default")
-                .name("test")
-                .force(true) // Test driver handles destroy better than shutdown
+                .uri(Property.ofValue("test:///default"))
+                .name(Property.ofValue("test"))
+                .force(Property.ofValue(true)) // Test driver handles destroy better than shutdown
                 .build();
 
         StopVm.Output stopOutput = stopTask.run(runContext);

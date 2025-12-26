@@ -1,7 +1,7 @@
 package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import lombok.Builder;
@@ -22,27 +22,24 @@ import org.libvirt.LibvirtException;
 @Getter
 @Plugin
 public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.Output> {
-    @PluginProperty(dynamic = true)
-    private String name;
+    private Property<String> name;
 
-    @PluginProperty
     @Builder.Default
-    private Boolean deleteStorage = false;
+    private Property<Boolean> deleteStorage = Property.ofValue(false);
 
-    @PluginProperty
     @Builder.Default
-    private Boolean failIfNotFound = true;
+    private Property<Boolean> failIfNotFound = Property.ofValue(true);
 
     @Override
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String renderedName = runContext.render(name);
+            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
 
             try {
                 Domain domain = conn.domainLookupByName(renderedName);
 
-                if (Boolean.TRUE.equals(deleteStorage)) {
+                if (runContext.render(this.deleteStorage).as(Boolean.class).orElse(false)) {
                     // TODO: need to check the requirements here
                 }
 
@@ -55,7 +52,7 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
                 runContext.logger().info("VM {} deleted successfully.", renderedName);
             } catch (LibvirtException e) {
                 if (e.getError().getCode() == ErrorNumber.VIR_ERR_NO_DOMAIN) {
-                    if (Boolean.TRUE.equals(failIfNotFound)) {
+                    if (runContext.render(this.failIfNotFound).as(Boolean.class).orElse(true)) {
                         throw e;
                     } else {
                         runContext.logger().warn("VM {} not found. Skipping deletion.", renderedName);

@@ -1,7 +1,7 @@
 package io.kestra.plugin.kvm;
 
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import lombok.Builder;
@@ -22,14 +22,12 @@ import org.libvirt.LibvirtException;
 @Plugin
 public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.Output> {
 
-    @PluginProperty(dynamic = true)
-    private String name;
+    private Property<String> name;
 
-    @PluginProperty(dynamic = true)
-    private String xmlDefinition;
+    private Property<String> xmlDefinition;
 
     @Builder.Default
-    private Boolean startAfterCreate = false;
+    private Property<Boolean> startAfterCreate = Property.ofValue(false);
 
     private Domain getDomain(Connect conn, String name) {
         try {
@@ -43,8 +41,8 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String xml = runContext.render(xmlDefinition);
-            String name = runContext.render(this.name);
+            String xml = runContext.render(this.xmlDefinition).as(String.class).orElseThrow();
+            String name = runContext.render(this.name).as(String.class).orElseThrow();
 
             // This updates the XML if it exists, or creates a new one if it doesn't.
             // Libvirt's defineXML is natively idempotent for configuration.
@@ -54,7 +52,8 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
             }
             runContext.logger().info("VM definition synchronized for {}.", domain.getName());
 
-            if (Boolean.TRUE.equals(startAfterCreate) && domain.getInfo().state != DomainState.VIR_DOMAIN_RUNNING) {
+            if (runContext.render(this.startAfterCreate).as(Boolean.class).orElse(false)
+                    && domain.getInfo().state != DomainState.VIR_DOMAIN_RUNNING) {
                 domain.create();
                 runContext.logger().info("VM {} booted.", domain.getName());
             }
