@@ -1,9 +1,11 @@
 package io.kestra.plugin.kvm;
 
+import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,14 +22,31 @@ import org.libvirt.LibvirtException;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin
+@Plugin(examples = {
+        @Example(full = true, code = """
+                id: kvm_lifecycle_ssh
+                namespace: kvmtest.ssh
+
+                tasks:
+                    - id: delete_vm
+                      type: io.kestra.plugin.kvm.DeleteVm
+                      uri: "qemu+ssh://root@167.99.104.163/system"
+                      name: "kestra-worker-nodes"
+                      deleteStorage: true
+                      failIfNotFound: true
+                    """)
+})
+@Schema(title = "Delete VM")
 public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.Output> {
+    @Schema(title = "VM Name")
     private Property<String> name;
 
     @Builder.Default
+    @Schema(title = "Delete Storage")
     private Property<Boolean> deleteStorage = Property.ofValue(false);
 
     @Builder.Default
+    @Schema(title = "Fail if VM not found")
     private Property<Boolean> failIfNotFound = Property.ofValue(true);
 
     @Override

@@ -1,9 +1,11 @@
 package io.kestra.plugin.kvm;
 
+import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,14 +22,30 @@ import org.libvirt.DomainInfo.DomainState;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin
+@Plugin(examples = {
+        @Example(full = true, code = """
+                id: kvm_lifecycle_ssh
+                namespace: kvmtest.ssh
+
+                tasks:
+                    - id: start_vm
+                      type: io.kestra.plugin.kvm.StartVm
+                      uri: qemu+ssh://root@167.99.104.163/system
+                      name: "kestra-worker-nodes"
+                      waitForRunning: true
+                    """)
+})
+@Schema(title = "Start VM")
 public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Output> {
+    @Schema(title = "VM Name")
     private Property<String> name;
 
     @Builder.Default
+    @Schema(title = "Wait for Running state")
     private Property<Boolean> waitForRunning = Property.ofValue(false);
 
     @Builder.Default
+    @Schema(title = "Time to wait")
     private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override

@@ -1,9 +1,11 @@
 package io.kestra.plugin.kvm;
 
+import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,17 +21,34 @@ import org.libvirt.DomainInfo.DomainState;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin
+@Plugin(examples = {
+        @Example(full = true, code = """
+                    id: kvm_lifecycle_ssh
+                    namespace: kvmtest.ssh
+
+                    tasks:
+                        - id: stop_vm
+                            type: io.kestra.plugin.kvm.StopVm
+                            uri: qemu+ssh://root@167.99.104.163/system
+                            name: "kestra-worker-nodes"
+                            force: true
+                """)
+})
+@Schema(title = "Stop VM")
 public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Output> {
+    @Schema(title = "VM Name")
     private Property<String> name;
 
     @Builder.Default
+    @Schema(title = "Force Stop")
     private Property<Boolean> force = Property.ofValue(false);
 
     @Builder.Default
+    @Schema(title = "Wait for Stopped state")
     private Property<Boolean> waitForStopped = Property.ofValue(false);
 
     @Builder.Default
+    @Schema(title = "Time to wait")
     private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override

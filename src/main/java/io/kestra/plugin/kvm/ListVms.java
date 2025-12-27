@@ -1,10 +1,11 @@
 package io.kestra.plugin.kvm;
 
+import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
-import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,9 +21,21 @@ import org.libvirt.Domain;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin
+@Plugin(examples = {
+        @Example(full = true, code = """
+                    id: kvm_lifecycle_ssh
+                    namespace: kvmtest.ssh
+
+                    tasks:
+                        - id: list_initial_vms
+                          type: io.kestra.plugin.kvm.ListVms
+                        uri: qemu+ssh://root@167.99.104.163/system
+                """)
+})
+@Schema(title = "List VMs")
 public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Output> {
 
+    @Schema(title = "Status Filter")
     private Property<String> statusFilter;
 
     @Override
