@@ -68,23 +68,23 @@ public class VmEventTrigger extends AbstractTrigger
     @Override
     public Optional<Execution> evaluate(ConditionContext conditionContext, TriggerContext context) throws Exception {
         RunContext runContext = conditionContext.getRunContext();
-        String renderedUri = runContext.render(this.uri).as(String.class).orElse(null);
-        String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
+        String rUri = runContext.render(this.uri).as(String.class).orElse(null);
+        String rName = runContext.render(this.name).as(String.class).orElseThrow();
 
-        try (LibvirtConnection connection = new LibvirtConnection(renderedUri)) {
+        try (LibvirtConnection connection = new LibvirtConnection(rUri)) {
             Connect conn = connection.get();
-            Domain domain = conn.domainLookupByName(renderedName);
+            Domain domain = conn.domainLookupByName(rName);
             String currentState = domain.getInfo().state.toString();
 
             var output = Output.builder()
-                    .name(renderedName)
+                    .name(rName)
                     .state(currentState)
                     .build();
             Execution execution = TriggerService.generateExecution(this, conditionContext, context, output);
 
             return Optional.of(execution);
         } catch (Exception e) {
-            runContext.logger().error("KVM Trigger failed for VM {}: {}", renderedName, e.getMessage());
+            runContext.logger().error("KVM Trigger failed for VM {}: {}", rName, e.getMessage());
             return Optional.empty();
         }
     }

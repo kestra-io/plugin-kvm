@@ -63,12 +63,12 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
+            String rName = runContext.render(this.name).as(String.class).orElseThrow();
             List<String> deletedVolumes = new ArrayList<>();
             boolean success = false;
 
             try {
-                Domain domain = conn.domainLookupByName(renderedName);
+                Domain domain = conn.domainLookupByName(rName);
 
                 if (runContext.render(this.deleteStorage).as(Boolean.class).orElse(false)) {
                     deletedVolumes = findAndDeleteVolumes(domain, conn, runContext);
@@ -80,12 +80,12 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
                 }
 
                 domain.undefine();
-                runContext.logger().info("VM {} deleted successfully.", renderedName);
+                runContext.logger().info("VM {} deleted successfully.", rName);
                 success = true;
             } catch (LibvirtException e) {
                 if (e.getError().getCode() == ErrorNumber.VIR_ERR_NO_DOMAIN
                         && !runContext.render(this.failIfNotFound).as(Boolean.class).orElse(true)) {
-                    runContext.logger().warn("VM {} not found. Skipping deletion.", renderedName);
+                    runContext.logger().warn("VM {} not found. Skipping deletion.", rName);
                 } else {
                     throw e;
                 }

@@ -91,14 +91,14 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String xml = runContext.render(this.xmlDefinition).as(String.class).orElseThrow();
-            String name = runContext.render(this.name).as(String.class).orElseThrow();
+            String rXml = runContext.render(this.xmlDefinition).as(String.class).orElseThrow();
+            String rName = runContext.render(this.name).as(String.class).orElseThrow();
 
             // This updates the XML if it exists, or creates a new one if it doesn't.
             // Libvirt's defineXML is natively idempotent for configuration.
-            Domain domain = getDomain(conn, name);
+            Domain domain = getDomain(conn, rName);
             if (domain == null) {
-                domain = conn.domainDefineXML(xml);
+                domain = conn.domainDefineXML(rXml);
             }
             runContext.logger().info("VM definition synchronized for {}.", domain.getName());
 

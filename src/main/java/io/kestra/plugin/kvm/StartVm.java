@@ -57,20 +57,20 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
-            Domain domain = conn.domainLookupByName(renderedName);
+            String rName = runContext.render(this.name).as(String.class).orElseThrow();
+            Domain domain = conn.domainLookupByName(rName);
             DomainInfo info = domain.getInfo();
 
             if (info.state == DomainState.VIR_DOMAIN_RUNNING) {
-                runContext.logger().info("VM {} is already running. Skipping start.", renderedName);
+                runContext.logger().info("VM {} is already running. Skipping start.", rName);
             } else {
                 domain.create();
-                runContext.logger().info("VM {} started successfully.", renderedName);
+                runContext.logger().info("VM {} started successfully.", rName);
 
                 if (runContext.render(this.waitForRunning).as(Boolean.class).orElse(false)) {
-                    Duration waitDuration = runContext.render(this.timeToWait).as(Duration.class)
+                    Duration rWaitDuration = runContext.render(this.timeToWait).as(Duration.class)
                             .orElse(Duration.ofSeconds(60));
-                    long end = System.currentTimeMillis() + waitDuration.toMillis();
+                    long end = System.currentTimeMillis() + rWaitDuration.toMillis();
                     boolean success = false;
 
                     while (System.currentTimeMillis() < end) {
@@ -95,7 +95,7 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
 
                     if (!success) {
                         throw new Exception(
-                                "Timeout waiting for VM to reach RUNNING state after " + waitDuration.getSeconds()
+                                "Timeout waiting for VM to reach RUNNING state after " + rWaitDuration.getSeconds()
                                         + "s");
                     }
                 }

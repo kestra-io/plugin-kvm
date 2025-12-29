@@ -60,25 +60,25 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
-            Domain domain = conn.domainLookupByName(renderedName);
+            String rName = runContext.render(this.name).as(String.class).orElseThrow();
+            Domain domain = conn.domainLookupByName(rName);
 
             if (domain.getInfo().state == DomainState.VIR_DOMAIN_SHUTOFF) {
-                runContext.logger().info("VM {} is already stopped. Skipping stop.", renderedName);
+                runContext.logger().info("VM {} is already stopped. Skipping stop.", rName);
             } else {
                 // Use destroy() for hard power off or shutdown() for force
                 if (runContext.render(this.force).as(Boolean.class).orElse(false)) {
-                    runContext.logger().info("Calling destroy on {}.", renderedName);
+                    runContext.logger().info("Calling destroy on {}.", rName);
                     domain.destroy();
                 } else {
-                    runContext.logger().info("Calling shutdown on {}.", renderedName);
+                    runContext.logger().info("Calling shutdown on {}.", rName);
                     domain.shutdown();
                 }
 
                 if (runContext.render(this.waitForStopped).as(Boolean.class).orElse(false)) {
-                    Duration waitDuration = runContext.render(this.timeToWait).as(Duration.class)
+                    Duration rWaitDuration = runContext.render(this.timeToWait).as(Duration.class)
                             .orElse(Duration.ofSeconds(60));
-                    long end = System.currentTimeMillis() + waitDuration.toMillis();
+                    long end = System.currentTimeMillis() + rWaitDuration.toMillis();
                     boolean success = false;
 
                     while (System.currentTimeMillis() < end) {
@@ -102,12 +102,12 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
 
                     if (!success) {
                         throw new Exception(
-                                "Timeout waiting for VM to reach RUNNING state after " + waitDuration.getSeconds()
+                                "Timeout waiting for VM to reach RUNNING state after " + rWaitDuration.getSeconds()
                                         + "s");
                     }
                 }
 
-                runContext.logger().info("Stop signal sent to VM {}.", renderedName);
+                runContext.logger().info("Stop signal sent to VM {}.", rName);
             }
 
             return Output.builder()

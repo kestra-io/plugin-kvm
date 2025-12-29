@@ -71,10 +71,10 @@ public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Out
                         .build());
             }
 
-            String filter = runContext.render(this.statusFilter).as(String.class).orElse(null);
-            if (filter != null && !filter.isEmpty()) {
+            String rFilter = runContext.render(this.statusFilter).as(String.class).orElse(null);
+            if (rFilter != null && !rFilter.isEmpty()) {
                 vms = vms.stream()
-                        .filter(v -> v.getState().equalsIgnoreCase(filter))
+                        .filter(v -> v.getState().equalsIgnoreCase(rFilter))
                         .collect(Collectors.toList());
             }
 

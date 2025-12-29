@@ -88,29 +88,29 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
     public Output run(RunContext runContext) throws Exception {
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
-            String renderedXml = runContext.render(this.xmlDefinition).as(String.class).orElseThrow();
-            String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
+            String rXml = runContext.render(this.xmlDefinition).as(String.class).orElseThrow();
+            String rName = runContext.render(this.name).as(String.class).orElseThrow();
 
-            Domain domain = conn.domainLookupByName(renderedName);
+            Domain domain = conn.domainLookupByName(rName);
             String existingUuid = domain.getUUIDString();
-            if (!renderedXml.contains("<uuid>")) {
-                renderedXml = renderedXml.replaceFirst("<name>", "<uuid>" + existingUuid + "</uuid>\n<name>");
+            if (!rXml.contains("<uuid>")) {
+                rXml = rXml.replaceFirst("<name>", "<uuid>" + existingUuid + "</uuid>\n<name>");
             }
-            domain = conn.domainDefineXML(renderedXml);
-            runContext.logger().info("Updated definition for VM: {}", renderedName);
+            domain = conn.domainDefineXML(rXml);
+            runContext.logger().info("Updated definition for VM: {}", rName);
 
             // Handle Restart logic
             boolean wasRestarted = false;
             if (runContext.render(this.restart).as(Boolean.class).orElse(false)) {
                 DomainState state = domain.getInfo().state;
                 if (state == DomainState.VIR_DOMAIN_RUNNING || state == DomainState.VIR_DOMAIN_PAUSED) {
-                    runContext.logger().info("Restarting VM {} to apply changes...", renderedName);
+                    runContext.logger().info("Restarting VM {} to apply changes...", rName);
                     domain.destroy(); // Hard stop
                     domain.create(); // Start
                     wasRestarted = true;
                 } else {
                     runContext.logger().info("VM {} is not running; configuration updated for next boot.",
-                            renderedName);
+                            rName);
                 }
             }
 
