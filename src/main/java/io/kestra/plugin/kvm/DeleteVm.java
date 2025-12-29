@@ -6,6 +6,9 @@ import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +18,8 @@ import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
+import org.libvirt.StoragePool;
+import org.libvirt.StorageVol;
 
 /**
  * Task to delete (undefine) a KVM Virtual Machine.
@@ -54,12 +59,14 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
         try (LibvirtConnection connection = getConnection(runContext)) {
             Connect conn = connection.get();
             String renderedName = runContext.render(this.name).as(String.class).orElseThrow();
+            List<String> deletedVolumes = new ArrayList<>();
+            boolean success = false;
 
             try {
                 Domain domain = conn.domainLookupByName(renderedName);
 
                 if (runContext.render(this.deleteStorage).as(Boolean.class).orElse(false)) {
-                    // TODO: need to check the requirements here
+                    deletedVolumes = findAndDeleteVolumes(domain, conn, runContext);
                 }
 
                 // A VM must be stopped before it can be undefined (deleted)
@@ -69,24 +76,52 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
 
                 domain.undefine();
                 runContext.logger().info("VM {} deleted successfully.", renderedName);
+                success = true;
             } catch (LibvirtException e) {
-                if (e.getError().getCode() == ErrorNumber.VIR_ERR_NO_DOMAIN) {
-                    if (runContext.render(this.failIfNotFound).as(Boolean.class).orElse(true)) {
-                        throw e;
-                    } else {
-                        runContext.logger().warn("VM {} not found. Skipping deletion.", renderedName);
-                    }
+                if (e.getError().getCode() == ErrorNumber.VIR_ERR_NO_DOMAIN
+                        && !runContext.render(this.failIfNotFound).as(Boolean.class).orElse(true)) {
+                    runContext.logger().warn("VM {} not found. Skipping deletion.", renderedName);
                 } else {
-                    // It's a different error (e.g., Auth, Network, Read-Only), always throw
                     throw e;
                 }
             }
 
             return Output.builder()
-                    .name(renderedName)
-                    .success(true)
+                    .success(success)
+                    .deletedVolumes(deletedVolumes)
                     .build();
         }
+    }
+
+    private List<String> findAndDeleteVolumes(Domain domain, Connect conn, RunContext runContext) throws Exception {
+        List<String> paths = new ArrayList<>();
+        Map<String, List<String>> poolToVolumes = LibvirtXmlParser.getVolumesGroupedByPool(domain);
+
+        for (Map.Entry<String, List<String>> entry : poolToVolumes.entrySet()) {
+            String poolName = entry.getKey();
+            List<String> volumeNames = entry.getValue();
+
+            try {
+                // Lookup pool once per group
+                StoragePool pool = conn.storagePoolLookupByName(poolName);
+
+                for (String volName : volumeNames) {
+                    try {
+                        StorageVol vol = pool.storageVolLookupByName(volName);
+                        vol.delete(0);
+                        paths.add(poolName + "/" + volName);
+                        runContext.logger().info("Successfully deleted volume {} from pool {}", volName, poolName);
+                    } catch (LibvirtException e) {
+                        runContext.logger().warn("Failed to delete volume {} in pool {}: {}", volName, poolName,
+                                e.getMessage());
+                    }
+                }
+            } catch (LibvirtException e) {
+                runContext.logger().error("Could not access pool {}: {}", poolName, e.getMessage());
+            }
+        }
+
+        return paths;
     }
 
     /**
@@ -95,7 +130,7 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        private String name;
-        private Boolean success;
+        private boolean success;
+        private List<String> deletedVolumes;
     }
 }
