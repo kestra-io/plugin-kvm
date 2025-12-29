@@ -27,24 +27,31 @@ import org.libvirt.Domain;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin(examples = {
-        @Example(full = true, code = """
-                id: monitor_kvm_vm
-                namespace: kvmtest.ssh
+@Plugin(
+        examples = {
+            @Example(
+                    full = true,
+                    code = """
+                        id: monitor_kvm_vm
+                        namespace: kvmtest.ssh
 
-                tasks:
-                  - id: alert
-                    type: io.kestra.plugin.core.log.Log
-                    message: "Name: {{ render(trigger.name | json) }}, State: {{ render(trigger.state | json) }}"
+                        tasks:
+                          - id: alert
+                            type: io.kestra.plugin.core.log.Log
+                            message: |
+                                Name: {{ render(trigger.name | json) }}
+                                State: {{ render(trigger.state | json) }}
 
-                triggers:
-                  - id: watch_vm
-                    type: io.kestra.plugin.kvm.VmEventTrigger
-                    uri: qemu+ssh://root@167.99.104.163/system
-                    name: kestra-worker-nodes
-                    interval: PT1M
-                                """)
-})
+                        triggers:
+                          - id: watch_vm
+                            type: io.kestra.plugin.kvm.VmEventTrigger
+                            uri: qemu+ssh://root@167.99.104.163/system
+                            name: kestra-worker-nodes
+                            interval: PT1M
+                        """
+                    )
+        }
+)
 @Schema(title = "VM Event Trigger")
 public class VmEventTrigger extends AbstractTrigger
         implements PollingTriggerInterface, TriggerOutput<VmEventTrigger.Output> {

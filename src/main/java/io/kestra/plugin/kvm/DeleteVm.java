@@ -27,20 +27,25 @@ import org.libvirt.StorageVol;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin(examples = {
-        @Example(full = true, code = """
-                id: kvm_lifecycle_ssh
-                namespace: kvmtest.ssh
+@Plugin(
+        examples = {
+            @Example(
+                    full = true,
+                    code = """
+                        id: kvm_lifecycle_ssh
+                        namespace: kvmtest.ssh
 
-                tasks:
-                    - id: delete_vm
-                      type: io.kestra.plugin.kvm.DeleteVm
-                      uri: "qemu+ssh://root@167.99.104.163/system"
-                      name: "kestra-worker-nodes"
-                      deleteStorage: true
-                      failIfNotFound: true
-                    """)
-})
+                        tasks:
+                            - id: delete_vm
+                              type: io.kestra.plugin.kvm.DeleteVm
+                              uri: "qemu+ssh://root@167.99.104.163/system"
+                              name: "kestra-worker-nodes"
+                              deleteStorage: true
+                              failIfNotFound: true
+                        """
+                    )
+        }
+)
 @Schema(title = "Delete VM")
 public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.Output> {
     @Schema(title = "VM Name")

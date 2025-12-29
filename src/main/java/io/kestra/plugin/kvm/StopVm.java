@@ -21,19 +21,24 @@ import org.libvirt.DomainInfo.DomainState;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin(examples = {
-        @Example(full = true, code = """
-                    id: kvm_lifecycle_ssh
-                    namespace: kvmtest.ssh
+@Plugin(
+        examples = {
+            @Example(
+                    full = true,
+                    code = """
+                        id: kvm_lifecycle_ssh
+                        namespace: kvmtest.ssh
 
-                    tasks:
-                        - id: stop_vm
-                            type: io.kestra.plugin.kvm.StopVm
-                            uri: qemu+ssh://root@167.99.104.163/system
-                            name: "kestra-worker-nodes"
-                            force: true
-                """)
-})
+                        tasks:
+                            - id: stop_vm
+                              type: io.kestra.plugin.kvm.StopVm
+                              uri: qemu+ssh://root@167.99.104.163/system
+                              name: "kestra-worker-nodes"
+                              force: true
+                        """
+                    )
+        }
+)
 @Schema(title = "Stop VM")
 public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Output> {
     @Schema(title = "VM Name")

@@ -20,49 +20,60 @@ import org.libvirt.DomainInfo.DomainState;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin(examples = {
-        @Example(full = true, code = """
-                id: crea_kvm_vm_ssh
-                namespace: kvmtest.ssh
+@Plugin(
+        examples = {
+            @Example(
+                    full = true,
+                    code = """
+                        id: crea_kvm_vm_ssh
+                        namespace: kvmtest.ssh
 
-                tasks:
-                - id: create_vm
-                    type: io.kestra.plugin.kvm.CreateVm
-                    # Replace with your Droplet IP.
-                    # ?no_verify=1 skips the 'known_hosts' check for the first run.
-                    uri: qemu+ssh://root@167.99.104.163/system
+                        tasks:
+                            - id: create_vm
+                              type: io.kestra.plugin.kvm.CreateVm
+                              # Replace with your Droplet IP.
+                              # ?no_verify=1 skips the 'known_hosts' check for the first run.
+                              uri: qemu+ssh://root@167.99.104.163/system
 
-                    # This is the standard Libvirt XML format
-                    xmlDefinition: |
-                    <domain type='kvm'>
-                        <name>kestra-worker-nodes</name>
-                        <memory unit='MiB'>512</memory>
-                        <vcpu placement='static'>1</vcpu>
-                        <os>
-                        <type arch='x86_64' machine='pc-q35-6.2'>hvm</type>
-                        <boot dev='hd'/>
-                        </os>
-                        <devices>
-                        <disk type='file' device='disk'>
-                            <driver name='qemu' type='qcow2'/>
-                            <source file='/var/lib/libvirt/images/empty_disk.qcow2'/>
-                            <target dev='vda' bus='virtio'/>
-                        </disk>
-                        </devices>
-                    </domain>
+                              # This is the standard Libvirt XML format
+                              xmlDefinition: |
+                                <domain type='kvm'>
+                                    <name>kestra-worker-nodes</name>
+                                    <memory unit='MiB'>512</memory>
+                                    <vcpu placement='static'>1</vcpu>
+                                    <os>
+                                      <type arch='x86_64' machine='pc-q35-6.2'>hvm</type>
+                                      <boot dev='hd'/>
+                                    </os>
+                                    <devices>
+                                        <disk type='volume' device='disk'>
+                                            <driver name='qemu' type='qcow2'/>
+                                            <source pool='default' volume='kestra-worker-nodes-os.qcow2'/>
+                                            <target dev='vda' bus='virtio'/>
+                                        </disk>
 
-                    # If true, it attempts to boot the VM immediately after defining it
-                    startAfterCreate: true
+                                        <disk type='volume' device='disk'>
+                                            <driver name='qemu' type='qcow2'/>
+                                            <source pool='default' volume='kestra-worker-nodes-data.qcow2'/>
+                                            <target dev='vdb' bus='virtio'/>
+                                        </disk>
+                                    </devices>
+                                </domain>
 
-                - id: log_result
-                    type: io.kestra.plugin.core.log.Log
-                    message: |
-                      VM Created!
-                      Name: {{outputs.create_vm.name}}
-                      UUID: {{ outputs.create_vm.uuid }}
-                      State: {{ outputs.create_vm.state }}
-                """)
-})
+                              # If true, it attempts to boot the VM immediately after defining it
+                              startAfterCreate: true
+
+                            - id: log_result
+                              type: io.kestra.plugin.core.log.Log
+                              message: |
+                                VM Created!
+                                Name: {{outputs.create_vm.name}}
+                                UUID: {{ outputs.create_vm.uuid }}
+                                State: {{ outputs.create_vm.state }}
+                        """
+                    )
+        }
+)
 @Schema(title = "Create VM")
 public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.Output> {
 

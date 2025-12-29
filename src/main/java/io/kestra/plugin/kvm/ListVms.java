@@ -21,17 +21,22 @@ import org.libvirt.Domain;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-@Plugin(examples = {
-        @Example(full = true, code = """
-                    id: kvm_lifecycle_ssh
-                    namespace: kvmtest.ssh
+@Plugin(
+        examples = {
+            @Example(
+                    full = true,
+                    code = """
+                            id: kvm_lifecycle_ssh
+                            namespace: kvmtest.ssh
 
-                    tasks:
-                        - id: list_initial_vms
-                          type: io.kestra.plugin.kvm.ListVms
-                        uri: qemu+ssh://root@167.99.104.163/system
-                """)
-})
+                            tasks:
+                                - id: list_initial_vms
+                                  type: io.kestra.plugin.kvm.ListVms
+                                  uri: qemu+ssh://root@167.99.104.163/system
+                        """
+                    )
+        }
+)
 @Schema(title = "List VMs")
 public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Output> {
 
