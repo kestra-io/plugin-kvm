@@ -114,7 +114,9 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
+        @Schema(title = "VM Name")
         private String name;
+        @Schema(title = "VM State")
         private String state;
     }
 }

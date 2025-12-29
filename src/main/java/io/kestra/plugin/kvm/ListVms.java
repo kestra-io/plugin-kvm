@@ -98,8 +98,11 @@ public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Out
     @AllArgsConstructor
     @Getter
     public static class VmEntry {
+        @Schema(title = "VM Name")
         private String name;
+        @Schema(title = "VM UUID")
         private String uuid;
+        @Schema(title = "VM State")
         private String state;
     }
 }

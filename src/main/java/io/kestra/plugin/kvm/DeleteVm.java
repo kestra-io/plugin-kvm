@@ -135,7 +135,9 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
+        @Schema(title = "Result of the delete operation")
         private boolean success;
+        @Schema(title = "List of deleted volumes")
         private List<String> deletedVolumes;
     }
 }

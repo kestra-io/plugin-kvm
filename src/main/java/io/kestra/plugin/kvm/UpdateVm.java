@@ -128,8 +128,11 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
+        @Schema(title = "VM Name")
         private String name;
+        @Schema(title = "Indicates whether the VM restart completed successfully.")
         private Boolean wasRestarted;
+        @Schema(title = "VM State")
         private String state;
     }
 }
