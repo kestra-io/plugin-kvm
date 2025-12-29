@@ -68,7 +68,10 @@ dependencies {
  **********************************************************************************************************************/
 test {
     useJUnitPlatform()
-    systemProperty "jna.library.path", "/opt/homebrew/lib"
+    // Only set the property if on Mac and NOT in a container
+    if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        systemProperty "jna.library.path", "/opt/homebrew/lib"
+    }
 }
 
 testlogger {

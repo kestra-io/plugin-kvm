@@ -4,7 +4,9 @@ import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
+import io.kestra.core.models.tasks.retrys.Exponential;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.utils.RetryUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
 import lombok.Builder;
@@ -78,31 +80,54 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
                 if (runContext.render(this.waitForStopped).as(Boolean.class).orElse(false)) {
                     Duration rWaitDuration = runContext.render(this.timeToWait).as(Duration.class)
                             .orElse(Duration.ofSeconds(60));
-                    long end = System.currentTimeMillis() + rWaitDuration.toMillis();
-                    boolean success = false;
 
-                    while (System.currentTimeMillis() < end) {
-                        DomainState currentState = domain.getInfo().state;
+                    RetryUtils.Instance<Boolean, IllegalStateException> retryUtils = new RetryUtils().of(
+                            Exponential.builder()
+                                    .delayFactor(2.0)
+                                    .interval(Duration.ofMillis(100))
+                                    .maxInterval(Duration.ofSeconds(2))
+                                    .maxAttempts(-1)
+                                    .maxDuration(rWaitDuration)
+                                    .build()
+                    );
 
-                        if (currentState == DomainState.VIR_DOMAIN_SHUTOFF) {
-                            success = true;
-                            break;
+                    boolean success;
+                    try {
+                        success = retryUtils.run(
+                                IllegalStateException.class,
+                                () -> {
+                                    DomainState currentState = domain.getInfo().state;
+
+                                    if (currentState == DomainState.VIR_DOMAIN_SHUTOFF) {
+                                        return true;
+                                    }
+
+                                    // Break if VM hits a state where it will never reach 'Running' without
+                                    // intervention
+                                    if (currentState == DomainState.VIR_DOMAIN_PAUSED
+                                            || currentState == DomainState.VIR_DOMAIN_CRASHED) {
+                                        throw new Exception(
+                                                "VM entered terminal state " + currentState
+                                                        + " while waiting for SHUTOFF");
+                                    }
+
+                                    throw new IllegalStateException("Waiting for VM to reach SHUTOFF state, "
+                                            + "current state: " + currentState);
+                                }
+                        );
+                    } catch (Throwable e) {
+                        if (e instanceof IllegalStateException) {
+                            success = false;
+                        } else if (e instanceof Exception ex) {
+                            throw ex;
+                        } else {
+                            throw new Exception(e);
                         }
-
-                        // Break if VM hits a state where it will never reach 'Running' without
-                        // intervention
-                        if (currentState == DomainState.VIR_DOMAIN_PAUSED
-                                || currentState == DomainState.VIR_DOMAIN_CRASHED) {
-                            throw new Exception(
-                                    "VM entered terminal state " + currentState + " while waiting for SHUTOFF");
-                        }
-
-                        Thread.sleep(2000); // Poll every 2 seconds
                     }
 
                     if (!success) {
                         throw new Exception(
-                                "Timeout waiting for VM to reach RUNNING state after " + rWaitDuration.getSeconds()
+                                "Timeout waiting for VM to reach SHUTOFF state after " + rWaitDuration.getSeconds()
                                         + "s");
                     }
                 }
