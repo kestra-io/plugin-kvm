@@ -3,15 +3,15 @@ package io.kestra.plugin.kvm;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.libvirt.LibvirtException;
 
-@MicronautTest
+@KestraTest
 class DeleteVmTest {
     @Inject
     private RunContextFactory runContextFactory;
