@@ -1,8 +1,8 @@
-group: io.kestra.plugin.template
-name: "template"
-title: "Template"
-description: "Plugin template for Kestra"
-body: ""
+group: io.kestra.plugin.kvm
+name: "kvm"
+title: "KVM / Libvirt"
+description: "Manage KVM virtual machines using the Libvirt API."
+body: "Use these tasks to define, start, stop, and delete virtual machines, update configurations, and list active or inactive domains directly from Kestra workflows. They require access to a libvirtd daemon (via local socket, SSH, or TLS) and accept task-specific settings such as XML definitions, power-state flags, and resource cleanup options for persistent storage. The included trigger allows for automated responses to VM lifecycle events, such as state transitions or unexpected shutdowns."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"

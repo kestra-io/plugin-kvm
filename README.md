@@ -30,45 +30,18 @@
 <br />
 <p align="center">
     <a href="https://go.kestra.io/video/product-overview" target="_blank">
-        <img src="https://kestra.io/startvideo.png" alt="Get started in 3 minutes with Kestra" width="640px" />
+        <img src="https://kestra.io/startvideo.png" alt="Get started in 4 minutes with Kestra" width="640px" />
     </a>
 </p>
-<p align="center" style="color:grey;"><i>Get started with Kestra in 3 minutes.</i></p>
+<p align="center" style="color:grey;"><i>Get started with Kestra in 4 minutes.</i></p>
 
 
-# Kestra Plugin Template
+# Kestra KVM Plugin
 
-> A template for creating Kestra plugins
-
-This repository serves as a general template for creating a new [Kestra](https://github.com/kestra-io/kestra) plugin. It should take only a few minutes! Use this repository as a scaffold to ensure that you've set up the plugin correctly, including unit tests and CI/CD workflows.
+> A plugin integrating with KVM
 
 ![Kestra orchestrator](https://kestra.io/video.gif)
 
-## Running the project in local
-### Prerequisites
-- Java 21
-- Docker
-
-### Running tests
-```
-./gradlew check --parallel
-```
-
-### Development
-
-`VSCode`:
-
-Follow the README.md within the `.devcontainer` folder for a quick and easy way to get up and running with developing plugins if you are using VSCode.
-
-`Other IDEs`:
-
-```
-./gradlew shadowJar && docker build -t kestra-custom . && docker run --rm -p 8080:8080 kestra-custom server local
-```
-> [!NOTE]
-> You need to relaunch this whole command everytime you make a change to your plugin
-
-go to http://localhost:8080, your plugin will be available to use
 
 ## Documentation
 * Full documentation can be found under: [kestra.io/docs](https://kestra.io/docs)
