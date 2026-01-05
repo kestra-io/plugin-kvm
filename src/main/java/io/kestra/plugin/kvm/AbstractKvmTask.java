@@ -4,8 +4,10 @@ import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -21,6 +23,8 @@ import org.libvirt.LibvirtException;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 public abstract class AbstractKvmTask extends Task {
     @Schema(title = "Libvirt URI")
     protected Property<String> uri;
@@ -52,3 +56,6 @@ public abstract class AbstractKvmTask extends Task {
         }
     }
 }
+
+
+

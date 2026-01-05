@@ -9,9 +9,9 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.utils.RetryUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -23,27 +23,30 @@ import org.libvirt.DomainInfo.DomainState;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Plugin(
-        examples = {
-            @Example(
-                    full = true,
-                    code = """
-                        id: kvm_lifecycle_ssh
-                        namespace: kvmtest.ssh
+    examples = {
+        @Example(
+            full = true,
+            code = """
+                id: kvm_lifecycle_ssh
+                namespace: kvmtest.ssh
 
-                        tasks:
-                            - id: stop_vm
-                              type: io.kestra.plugin.kvm.StopVm
-                              uri: qemu+ssh://root@167.99.104.163/system
-                              name: "kestra-worker-nodes"
-                              force: true
-                        """
-                    )
-        }
+                tasks:
+                  - id: stop_vm
+                    type: io.kestra.plugin.kvm.StopVm
+                    uri: qemu+ssh://root@167.99.104.163/system
+                    name: "kestra-worker-nodes"
+                    force: true
+                """
+        )
+    }
 )
 @Schema(title = "Stop VM")
 public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Output> {
     @Schema(title = "VM Name")
+    @NotNull
     private Property<String> name;
 
     @Builder.Default
@@ -150,6 +153,7 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(title = "VM Name")
         private String name;
+
         @Schema(title = "VM State")
         private String state;
     }

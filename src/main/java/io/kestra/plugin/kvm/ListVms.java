@@ -7,10 +7,8 @@ import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -21,21 +19,23 @@ import org.libvirt.Domain;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Plugin(
-        examples = {
-            @Example(
-                    full = true,
-                    code = """
-                            id: kvm_lifecycle_ssh
-                            namespace: kvmtest.ssh
+    examples = {
+        @Example(
+            full = true,
+            code = """
+                id: kvm_lifecycle_ssh
+                namespace: kvmtest.ssh
 
-                            tasks:
-                                - id: list_initial_vms
-                                  type: io.kestra.plugin.kvm.ListVms
-                                  uri: qemu+ssh://root@167.99.104.163/system
-                        """
-                    )
-        }
+                tasks:
+                  - id: list_initial_vms
+                    type: io.kestra.plugin.kvm.ListVms
+                    uri: qemu+ssh://root@167.99.104.163/system
+                """
+        )
+    }
 )
 @Schema(title = "List VMs")
 public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Output> {
@@ -100,8 +100,10 @@ public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Out
     public static class VmEntry {
         @Schema(title = "VM Name")
         private String name;
+
         @Schema(title = "VM UUID")
         private String uuid;
+
         @Schema(title = "VM State")
         private String state;
     }

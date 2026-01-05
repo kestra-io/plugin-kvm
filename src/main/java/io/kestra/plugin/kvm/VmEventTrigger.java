@@ -14,9 +14,9 @@ import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
 import java.util.Optional;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -25,36 +25,37 @@ import org.libvirt.Domain;
  * Trigger that polls a KVM Virtual Machine state.
  */
 @SuperBuilder
-@NoArgsConstructor
+@ToString
+@EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 @Plugin(
-        examples = {
-            @Example(
-                    full = true,
-                    code = """
-                        id: monitor_kvm_vm
-                        namespace: kvmtest.ssh
+    examples = {
+        @Example(
+            full = true,
+            code = """
+                id: monitor_kvm_vm
+                namespace: kvmtest.ssh
 
-                        tasks:
-                          - id: alert
-                            type: io.kestra.plugin.core.log.Log
-                            message: |
-                                Name: {{ render(trigger.name | json) }}
-                                State: {{ render(trigger.state | json) }}
+                tasks:
+                  - id: alert
+                    type: io.kestra.plugin.core.log.Log
+                    message: |
+                        Name: {{ render(trigger.name | json) }}
+                        State: {{ render(trigger.state | json) }}
 
-                        triggers:
-                          - id: watch_vm
-                            type: io.kestra.plugin.kvm.VmEventTrigger
-                            uri: qemu+ssh://root@167.99.104.163/system
-                            name: kestra-worker-nodes
-                            interval: PT1M
-                        """
-                    )
-        }
+                triggers:
+                  - id: watch_vm
+                    type: io.kestra.plugin.kvm.VmEventTrigger
+                    uri: qemu+ssh://root@167.99.104.163/system
+                    name: kestra-worker-nodes
+                    interval: PT1M
+                """
+            )
+    }
 )
 @Schema(title = "VM Event Trigger")
-public class VmEventTrigger extends AbstractTrigger
-        implements PollingTriggerInterface, TriggerOutput<VmEventTrigger.Output> {
+public class VmEventTrigger extends AbstractTrigger implements PollingTriggerInterface, TriggerOutput<VmEventTrigger.Output> {
 
     @Builder.Default
     private Duration interval = Duration.ofMinutes(1);
@@ -63,6 +64,7 @@ public class VmEventTrigger extends AbstractTrigger
     protected Property<String> uri;
 
     @Schema(title = "VM Name")
+    @NotNull
     private Property<String> name;
 
     @Override
@@ -97,6 +99,7 @@ public class VmEventTrigger extends AbstractTrigger
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(title = "VM Name")
         private String name;
+
         @Schema(title = "VM State")
         private String state;
     }

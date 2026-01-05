@@ -9,9 +9,9 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.utils.RetryUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -24,27 +24,30 @@ import org.libvirt.DomainInfo.DomainState;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Plugin(
-        examples = {
-            @Example(
-                    full = true,
-                    code = """
-                        id: kvm_lifecycle_ssh
-                        namespace: kvmtest.ssh
+    examples = {
+        @Example(
+            full = true,
+            code = """
+                id: kvm_lifecycle_ssh
+                namespace: kvmtest.ssh
 
-                        tasks:
-                            - id: start_vm
-                              type: io.kestra.plugin.kvm.StartVm
-                              uri: qemu+ssh://root@167.99.104.163/system
-                              name: "kestra-worker-nodes"
-                              waitForRunning: true
-                        """
-                    )
-        }
+                tasks:
+                  - id: start_vm
+                    type: io.kestra.plugin.kvm.StartVm
+                    uri: qemu+ssh://root@167.99.104.163/system
+                    name: "kestra-worker-nodes"
+                    waitForRunning: true
+                """
+            )
+    }
 )
 @Schema(title = "Start VM")
 public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Output> {
     @Schema(title = "VM Name")
+    @NotNull
     private Property<String> name;
 
     @Builder.Default
@@ -141,6 +144,7 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(title = "VM Name")
         private String name;
+
         @Schema(title = "VM State")
         private String state;
     }

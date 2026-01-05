@@ -9,9 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -27,28 +27,31 @@ import org.libvirt.StorageVol;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Plugin(
-        examples = {
-            @Example(
-                    full = true,
-                    code = """
-                        id: kvm_lifecycle_ssh
-                        namespace: kvmtest.ssh
+    examples = {
+        @Example(
+            full = true,
+            code = """
+                id: kvm_lifecycle_ssh
+                namespace: kvmtest.ssh
 
-                        tasks:
-                            - id: delete_vm
-                              type: io.kestra.plugin.kvm.DeleteVm
-                              uri: "qemu+ssh://root@167.99.104.163/system"
-                              name: "kestra-worker-nodes"
-                              deleteStorage: true
-                              failIfNotFound: true
-                        """
-                    )
-        }
+                tasks:
+                  - id: delete_vm
+                    type: io.kestra.plugin.kvm.DeleteVm
+                    uri: "qemu+ssh://root@167.99.104.163/system"
+                    name: "kestra-worker-nodes"
+                    deleteStorage: true
+                    failIfNotFound: true
+                """
+        )
+    }
 )
 @Schema(title = "Delete VM")
 public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.Output> {
     @Schema(title = "VM Name")
+    @NotNull
     private Property<String> name;
 
     @Builder.Default
@@ -137,6 +140,7 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(title = "Result of the delete operation")
         private boolean success;
+
         @Schema(title = "List of deleted volumes")
         private List<String> deletedVolumes;
     }
