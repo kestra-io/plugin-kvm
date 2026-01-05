@@ -51,7 +51,7 @@ dependencies {
     compileOnly group: "io.kestra", name: "script", version: kestraVersion
 
     // Libvirt Java Bindings (must be bundled in the shadow JAR)
-    implementation group: 'org.libvirt', name: 'libvirt', version: '0.5.1'
+    implementation group: 'org.libvirt', name: 'libvirt', version: '0.5.2'
 }
 
 
