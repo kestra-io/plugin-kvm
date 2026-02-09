@@ -84,7 +84,7 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
                     Duration rWaitDuration = runContext.render(this.timeToWait).as(Duration.class)
                             .orElse(Duration.ofSeconds(60));
 
-                    RetryUtils.Instance<Boolean, IllegalStateException> retryUtils = new RetryUtils().of(
+                    RetryUtils.Instance<Boolean, IllegalStateException> retryUtils = RetryUtils.of(
                             Exponential.builder()
                                     .delayFactor(2.0)
                                     .interval(Duration.ofMillis(100))
