@@ -72,16 +72,28 @@ import org.libvirt.DomainInfo.DomainState;
         )
     }
 )
-@Schema(title = "Update VM")
+@Schema(
+    title = "Update KVM domain definition",
+    description = "Redefines a libvirt domain from rendered XML while preserving the existing UUID if missing in the template. Optionally restarts running or paused domains to apply changes when restart is true (default false)."
+)
 public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.Output> {
-    @Schema(title = "VM Name")
+    @Schema(
+        title = "Domain name",
+        description = "Domain to redefine; should match the <name> in the XML."
+    )
     private Property<String> name;
 
-    @Schema(title = "XML Definition")
+    @Schema(
+        title = "Domain XML",
+        description = "Libvirt domain XML template rendered with flow variables before defineXML; UUID is injected when absent."
+    )
     private Property<String> xmlDefinition;
 
     @Builder.Default
-    @Schema(title = "Restart VM")
+    @Schema(
+        title = "Restart after update",
+        description = "If true, destroys then starts the domain when it is RUNNING or PAUSED to apply changes. Default false."
+    )
     private Property<Boolean> restart = Property.ofValue(false);
 
     @Override
@@ -128,13 +140,22 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "VM Name")
+        @Schema(
+            title = "VM Name",
+            description = "Redefined domain name."
+        )
         private String name;
 
-        @Schema(title = "Indicates whether the VM restart completed successfully.")
+        @Schema(
+            title = "Restart performed",
+            description = "True when the domain was destroyed and started due to restart = true."
+        )
         private Boolean wasRestarted;
 
-        @Schema(title = "VM State")
+        @Schema(
+            title = "VM State",
+            description = "Libvirt domain state after the update."
+        )
         private String state;
     }
 }

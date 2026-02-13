@@ -43,22 +43,37 @@ import org.libvirt.DomainInfo.DomainState;
         )
     }
 )
-@Schema(title = "Stop VM")
+@Schema(
+    title = "Stop or shutdown KVM domain",
+    description = "Sends a shutdown or hard power-off (force) to a libvirt domain. Can optionally wait until the domain reaches SHUTOFF using exponential retry up to timeToWait (default PT60S). Requires access to the target libvirt URI."
+)
 public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Output> {
-    @Schema(title = "VM Name")
+    @Schema(
+        title = "Domain name",
+        description = "Name of the libvirt domain to stop."
+    )
     @NotNull
     private Property<String> name;
 
     @Builder.Default
-    @Schema(title = "Force Stop")
+    @Schema(
+        title = "Force power off",
+        description = "If true, calls destroy (hard power off); otherwise uses graceful shutdown. Default false."
+    )
     private Property<Boolean> force = Property.ofValue(false);
 
     @Builder.Default
-    @Schema(title = "Wait for Stopped state")
+    @Schema(
+        title = "Wait for SHUTOFF",
+        description = "If true, polls until the domain is SHUTOFF or timeout. Default false."
+    )
     private Property<Boolean> waitForStopped = Property.ofValue(false);
 
     @Builder.Default
-    @Schema(title = "Time to wait")
+    @Schema(
+        title = "Max wait duration",
+        description = "Maximum time to wait for SHUTOFF when waitForStopped is true. Default PT60S."
+    )
     private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override
@@ -151,10 +166,16 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "VM Name")
+        @Schema(
+            title = "VM Name",
+            description = "Stopped domain name."
+        )
         private String name;
 
-        @Schema(title = "VM State")
+        @Schema(
+            title = "VM State",
+            description = "Libvirt domain state after the stop attempt."
+        )
         private String state;
     }
 }

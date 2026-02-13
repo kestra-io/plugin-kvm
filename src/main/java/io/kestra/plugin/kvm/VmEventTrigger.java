@@ -54,16 +54,29 @@ import org.libvirt.Domain;
             )
     }
 )
-@Schema(title = "VM Event Trigger")
+@Schema(
+    title = "Poll KVM domain state",
+    description = "Polling trigger that connects to libvirt on the given URI, reads a domain's state on each interval, and emits an execution with the name and current state. Logs and skips when lookup fails."
+)
 public class VmEventTrigger extends AbstractTrigger implements PollingTriggerInterface, TriggerOutput<VmEventTrigger.Output> {
 
     @Builder.Default
+    @Schema(
+        title = "Poll interval",
+        description = "Time between state checks. Default PT1M."
+    )
     private Duration interval = Duration.ofMinutes(1);
 
-    @Schema(title = "Libvirt URI")
+    @Schema(
+        title = "Libvirt URI",
+        description = "Connection URI rendered before use; required to reach the hypervisor."
+    )
     protected Property<String> uri;
 
-    @Schema(title = "VM Name")
+    @Schema(
+        title = "Domain name",
+        description = "Name of the libvirt domain to monitor."
+    )
     @NotNull
     private Property<String> name;
 
@@ -97,10 +110,16 @@ public class VmEventTrigger extends AbstractTrigger implements PollingTriggerInt
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "VM Name")
+        @Schema(
+            title = "VM Name",
+            description = "Monitored domain name."
+        )
         private String name;
 
-        @Schema(title = "VM State")
+        @Schema(
+            title = "VM State",
+            description = "Libvirt domain state at the time of polling."
+        )
         private String state;
     }
 }
