@@ -48,18 +48,30 @@ import org.libvirt.StorageVol;
         )
     }
 )
-@Schema(title = "Delete VM")
+@Schema(
+    title = "Delete or undefine KVM domain",
+    description = "Looks up a libvirt domain by name, stops it if running, and undefines it. Can also delete attached storage volumes parsed from the domain XML when deleteStorage is true (default false). Fails when the domain is missing unless failIfNotFound is set to false (default true)."
+)
 public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.Output> {
-    @Schema(title = "VM Name")
+    @Schema(
+        title = "Domain name",
+        description = "Name of the libvirt domain to delete."
+    )
     @NotNull
     private Property<String> name;
 
     @Builder.Default
-    @Schema(title = "Delete Storage")
+    @Schema(
+        title = "Delete storage volumes",
+        description = "If true, deletes volumes referenced in the domain XML by pool/name before undefine. Default false."
+    )
     private Property<Boolean> deleteStorage = Property.ofValue(false);
 
     @Builder.Default
-    @Schema(title = "Fail if VM not found")
+    @Schema(
+        title = "Fail if missing",
+        description = "If true, throws when the domain does not exist; if false, logs a warning and continues. Default true."
+    )
     private Property<Boolean> failIfNotFound = Property.ofValue(true);
 
     @Override
@@ -138,10 +150,16 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "Result of the delete operation")
+        @Schema(
+            title = "Delete succeeded",
+            description = "True when the domain was found and undefined; false when skipped."
+        )
         private boolean success;
 
-        @Schema(title = "List of deleted volumes")
+        @Schema(
+            title = "Deleted volumes",
+            description = "Volume identifiers removed when deleteStorage is true."
+        )
         private List<String> deletedVolumes;
     }
 }

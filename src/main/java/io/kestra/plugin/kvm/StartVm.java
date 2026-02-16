@@ -44,18 +44,30 @@ import org.libvirt.DomainInfo.DomainState;
             )
     }
 )
-@Schema(title = "Start VM")
+@Schema(
+    title = "Start a KVM domain",
+    description = "Boots a libvirt domain if it isn't already running. Can optionally wait until the domain reaches RUNNING state using exponential retry up to timeToWait (default PT60S). Requires access to the target libvirt URI."
+)
 public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Output> {
-    @Schema(title = "VM Name")
+    @Schema(
+        title = "Domain name",
+        description = "Name of the libvirt domain to start."
+    )
     @NotNull
     private Property<String> name;
 
     @Builder.Default
-    @Schema(title = "Wait for Running state")
+    @Schema(
+        title = "Wait for RUNNING",
+        description = "If true, polls domain state until RUNNING or timeout. Default false."
+    )
     private Property<Boolean> waitForRunning = Property.ofValue(false);
 
     @Builder.Default
-    @Schema(title = "Time to wait")
+    @Schema(
+        title = "Max wait duration",
+        description = "Maximum time to wait for RUNNING when waitForRunning is true. Default PT60S."
+    )
     private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override
@@ -142,10 +154,16 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "VM Name")
+        @Schema(
+            title = "VM Name",
+            description = "Started domain name."
+        )
         private String name;
 
-        @Schema(title = "VM State")
+        @Schema(
+            title = "VM State",
+            description = "Libvirt domain state after the start attempt."
+        )
         private String state;
     }
 }

@@ -77,19 +77,31 @@ import org.libvirt.DomainInfo.DomainState;
         )
     }
 )
-@Schema(title = "Create VM")
+@Schema(
+    title = "Create or update KVM domain",
+    description = "Defines a libvirt domain from rendered XML, creating it if it doesn't exist and keeping configuration in sync. Can optionally boot the VM when startAfterCreate is true (default false); requires access to the target libvirt URI."
+)
 public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.Output> {
 
-    @Schema(title = "VM Name")
+    @Schema(
+        title = "Domain name",
+        description = "VM name used for lookup and definition; should match the <name> element in the XML."
+    )
     @NotNull
     private Property<String> name;
 
-    @Schema(title = "XML Definition")
+    @Schema(
+        title = "Domain XML",
+        description = "Full libvirt domain XML template rendered with flow variables before being sent to defineXML."
+    )
     @NotNull
     private Property<String> xmlDefinition;
 
     @Builder.Default
-    @Schema(title = "Start after create")
+    @Schema(
+        title = "Start after define",
+        description = "If true, boots the VM after definition when it isn't already running. Default false."
+    )
     private Property<Boolean> startAfterCreate = Property.ofValue(false);
 
     @Override
@@ -127,13 +139,22 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "VM Name")
+        @Schema(
+            title = "VM Name",
+            description = "Defined domain name."
+        )
         private String name;
 
-        @Schema(title = "VM UUID")
+        @Schema(
+            title = "VM UUID",
+            description = "Persistent libvirt UUID of the domain."
+        )
         private String uuid;
 
-        @Schema(title = "VM State")
+        @Schema(
+            title = "VM State",
+            description = "Libvirt domain state after definition and optional start."
+        )
         private String state;
     }
 }
