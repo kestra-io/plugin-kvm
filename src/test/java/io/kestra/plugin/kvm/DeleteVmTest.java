@@ -1,15 +1,17 @@
 package io.kestra.plugin.kvm;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
+import org.libvirt.LibvirtException;
 
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
+
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.Test;
-import org.libvirt.LibvirtException;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @KestraTest
 class DeleteVmTest {
@@ -22,10 +24,10 @@ class DeleteVmTest {
 
         // Attempt to delete a VM that doesn't exist
         DeleteVm task = DeleteVm.builder()
-                .uri(Property.ofValue("test:///default"))
-                .name(Property.ofValue("i-do-not-exist"))
-                .failIfNotFound(Property.ofValue(false))
-                .build();
+            .uri(Property.ofValue("test:///default"))
+            .name(Property.ofValue("i-do-not-exist"))
+            .failIfNotFound(Property.ofValue(false))
+            .build();
 
         // Should log a warning but NOT throw an exception
         assertDoesNotThrow(() -> task.run(runContext));
@@ -36,10 +38,10 @@ class DeleteVmTest {
         RunContext runContext = runContextFactory.of();
 
         DeleteVm task = DeleteVm.builder()
-                .uri(Property.ofValue("test:///default"))
-                .name(Property.ofValue("i-do-not-exist"))
-                .failIfNotFound(Property.ofValue(true))
-                .build();
+            .uri(Property.ofValue("test:///default"))
+            .name(Property.ofValue("i-do-not-exist"))
+            .failIfNotFound(Property.ofValue(true))
+            .build();
 
         // Should throw LibvirtException (VIR_ERR_NO_DOMAIN)
         assertThrows(LibvirtException.class, () -> task.run(runContext));

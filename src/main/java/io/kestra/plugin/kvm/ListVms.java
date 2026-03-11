@@ -1,17 +1,19 @@
 package io.kestra.plugin.kvm;
 
+import java.util.stream.Collectors;
+
+import org.libvirt.Connect;
+import org.libvirt.Domain;
+
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.libvirt.Connect;
-import org.libvirt.Domain;
 
 /**
  * Task to list KVM Virtual Machines.
@@ -53,29 +55,33 @@ public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Out
             int[] activeIds = conn.listDomains();
             for (int id : activeIds) {
                 Domain d = conn.domainLookupByID(id);
-                vms.add(VmEntry.builder()
+                vms.add(
+                    VmEntry.builder()
                         .name(d.getName())
                         .uuid(d.getUUIDString())
                         .state(d.getInfo().state.toString())
-                        .build());
+                        .build()
+                );
             }
 
             // 2. Get Inactive (Defined but stopped) VMs
             String[] inactiveNames = conn.listDefinedDomains();
             for (String name : inactiveNames) {
                 Domain d = conn.domainLookupByName(name);
-                vms.add(VmEntry.builder()
+                vms.add(
+                    VmEntry.builder()
                         .name(d.getName())
                         .uuid(d.getUUIDString())
                         .state(d.getInfo().state.toString())
-                        .build());
+                        .build()
+                );
             }
 
             String rFilter = runContext.render(this.statusFilter).as(String.class).orElse(null);
             if (rFilter != null && !rFilter.isEmpty()) {
                 vms = vms.stream()
-                        .filter(v -> v.getState().equalsIgnoreCase(rFilter))
-                        .collect(Collectors.toList());
+                    .filter(v -> v.getState().equalsIgnoreCase(rFilter))
+                    .collect(Collectors.toList());
             }
 
             return Output.builder().vms(vms).build();

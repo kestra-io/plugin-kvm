@@ -1,5 +1,11 @@
 package io.kestra.plugin.kvm;
 
+import java.time.Duration;
+
+import org.libvirt.Connect;
+import org.libvirt.Domain;
+import org.libvirt.DomainInfo.DomainState;
+
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
@@ -7,15 +13,11 @@ import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.models.tasks.retrys.Exponential;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.utils.RetryUtils;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.Duration;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.libvirt.Connect;
-import org.libvirt.Domain;
-import org.libvirt.DomainInfo.DomainState;
 
 /**
  * Task to stop a KVM Virtual Machine.
@@ -97,41 +99,47 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
 
                 if (runContext.render(this.waitForStopped).as(Boolean.class).orElse(false)) {
                     Duration rWaitDuration = runContext.render(this.timeToWait).as(Duration.class)
-                            .orElse(Duration.ofSeconds(60));
+                        .orElse(Duration.ofSeconds(60));
 
                     RetryUtils.Instance<Boolean, IllegalStateException> retryUtils = RetryUtils.of(
-                            Exponential.builder()
-                                    .delayFactor(2.0)
-                                    .interval(Duration.ofMillis(100))
-                                    .maxInterval(Duration.ofSeconds(2))
-                                    .maxAttempts(-1)
-                                    .maxDuration(rWaitDuration)
-                                    .build()
+                        Exponential.builder()
+                            .delayFactor(2.0)
+                            .interval(Duration.ofMillis(100))
+                            .maxInterval(Duration.ofSeconds(2))
+                            .maxAttempts(-1)
+                            .maxDuration(rWaitDuration)
+                            .build()
                     );
 
                     boolean success;
                     try {
                         success = retryUtils.run(
-                                IllegalStateException.class,
-                                () -> {
-                                    DomainState currentState = domain.getInfo().state;
+                            IllegalStateException.class,
+                            () ->
+                            {
+                                DomainState currentState = domain.getInfo().state;
 
-                                    if (currentState == DomainState.VIR_DOMAIN_SHUTOFF) {
-                                        return true;
-                                    }
-
-                                    // Break if VM hits a state where it will never reach 'Running' without
-                                    // intervention
-                                    if (currentState == DomainState.VIR_DOMAIN_PAUSED
-                                            || currentState == DomainState.VIR_DOMAIN_CRASHED) {
-                                        throw new Exception(
-                                                "VM entered terminal state " + currentState
-                                                        + " while waiting for SHUTOFF");
-                                    }
-
-                                    throw new IllegalStateException("Waiting for VM to reach SHUTOFF state, "
-                                            + "current state: " + currentState);
+                                if (currentState == DomainState.VIR_DOMAIN_SHUTOFF) {
+                                    return true;
                                 }
+
+                                // Break if VM hits a state where it will never reach 'Running' without
+                                // intervention
+                                if (
+                                    currentState == DomainState.VIR_DOMAIN_PAUSED
+                                        || currentState == DomainState.VIR_DOMAIN_CRASHED
+                                ) {
+                                    throw new Exception(
+                                        "VM entered terminal state " + currentState
+                                            + " while waiting for SHUTOFF"
+                                    );
+                                }
+
+                                throw new IllegalStateException(
+                                    "Waiting for VM to reach SHUTOFF state, "
+                                        + "current state: " + currentState
+                                );
+                            }
                         );
                     } catch (Throwable e) {
                         if (e instanceof IllegalStateException) {
@@ -145,8 +153,9 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
 
                     if (!success) {
                         throw new Exception(
-                                "Timeout waiting for VM to reach SHUTOFF state after " + rWaitDuration.getSeconds()
-                                        + "s");
+                            "Timeout waiting for VM to reach SHUTOFF state after " + rWaitDuration.getSeconds()
+                                + "s"
+                        );
                     }
                 }
 
@@ -154,9 +163,9 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
             }
 
             return Output.builder()
-                    .name(domain.getName())
-                    .state(domain.getInfo().state.toString())
-                    .build();
+                .name(domain.getName())
+                .state(domain.getInfo().state.toString())
+                .build();
         }
     }
 

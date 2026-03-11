@@ -1,18 +1,9 @@
 package io.kestra.plugin.kvm;
 
-import io.kestra.core.models.annotations.Example;
-import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.property.Property;
-import io.kestra.core.models.tasks.RunnableTask;
-import io.kestra.core.runners.RunContext;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
@@ -20,6 +11,17 @@ import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
+
+import io.kestra.core.models.annotations.Example;
+import io.kestra.core.models.annotations.Plugin;
+import io.kestra.core.models.property.Property;
+import io.kestra.core.models.tasks.RunnableTask;
+import io.kestra.core.runners.RunContext;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Task to delete (undefine) a KVM Virtual Machine.
@@ -98,8 +100,10 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
                 runContext.logger().info("VM {} deleted successfully.", rName);
                 success = true;
             } catch (LibvirtException e) {
-                if (e.getError().getCode() == ErrorNumber.VIR_ERR_NO_DOMAIN
-                        && !runContext.render(this.failIfNotFound).as(Boolean.class).orElse(true)) {
+                if (
+                    e.getError().getCode() == ErrorNumber.VIR_ERR_NO_DOMAIN
+                        && !runContext.render(this.failIfNotFound).as(Boolean.class).orElse(true)
+                ) {
                     runContext.logger().warn("VM {} not found. Skipping deletion.", rName);
                 } else {
                     throw e;
@@ -107,9 +111,9 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
             }
 
             return Output.builder()
-                    .success(success)
-                    .deletedVolumes(deletedVolumes)
-                    .build();
+                .success(success)
+                .deletedVolumes(deletedVolumes)
+                .build();
         }
     }
 
@@ -132,8 +136,10 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
                         paths.add(poolName + "/" + volName);
                         runContext.logger().info("Successfully deleted volume {} from pool {}", volName, poolName);
                     } catch (LibvirtException e) {
-                        runContext.logger().warn("Failed to delete volume {} in pool {}: {}", volName, poolName,
-                                e.getMessage());
+                        runContext.logger().warn(
+                            "Failed to delete volume {} in pool {}: {}", volName, poolName,
+                            e.getMessage()
+                        );
                     }
                 }
             } catch (LibvirtException e) {

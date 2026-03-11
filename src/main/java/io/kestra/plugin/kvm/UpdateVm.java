@@ -1,16 +1,18 @@
 package io.kestra.plugin.kvm;
 
+import org.libvirt.Connect;
+import org.libvirt.Domain;
+import org.libvirt.DomainInfo.DomainState;
+
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.libvirt.Connect;
-import org.libvirt.Domain;
-import org.libvirt.DomainInfo.DomainState;
 
 /**
  * Task to update a KVM Virtual Machine configuration.
@@ -121,16 +123,18 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
                     domain.create(); // Start
                     wasRestarted = true;
                 } else {
-                    runContext.logger().info("VM {} is not running; configuration updated for next boot.",
-                            rName);
+                    runContext.logger().info(
+                        "VM {} is not running; configuration updated for next boot.",
+                        rName
+                    );
                 }
             }
 
             return Output.builder()
-                    .name(domain.getName())
-                    .wasRestarted(wasRestarted)
-                    .state(domain.getInfo().state.toString())
-                    .build();
+                .name(domain.getName())
+                .wasRestarted(wasRestarted)
+                .state(domain.getInfo().state.toString())
+                .build();
         }
     }
 

@@ -1,20 +1,21 @@
 package io.kestra.plugin.kvm;
 
+import org.libvirt.Connect;
+import org.libvirt.Domain;
+import org.libvirt.DomainInfo.DomainState;
+
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-import org.libvirt.Connect;
-import org.libvirt.Domain;
-import org.libvirt.DomainInfo.DomainState;
 
 /**
  * Task to create a KVM Virtual Machine.
@@ -119,17 +120,19 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
             }
             runContext.logger().info("VM definition synchronized for {}.", domain.getName());
 
-            if (runContext.render(this.startAfterCreate).as(Boolean.class).orElse(false)
-                    && domain.getInfo().state != DomainState.VIR_DOMAIN_RUNNING) {
+            if (
+                runContext.render(this.startAfterCreate).as(Boolean.class).orElse(false)
+                    && domain.getInfo().state != DomainState.VIR_DOMAIN_RUNNING
+            ) {
                 domain.create();
                 runContext.logger().info("VM {} booted.", domain.getName());
             }
 
             return Output.builder()
-                    .name(domain.getName())
-                    .uuid(domain.getUUIDString())
-                    .state(domain.getInfo().state.toString())
-                    .build();
+                .name(domain.getName())
+                .uuid(domain.getUUIDString())
+                .state(domain.getInfo().state.toString())
+                .build();
         }
     }
 

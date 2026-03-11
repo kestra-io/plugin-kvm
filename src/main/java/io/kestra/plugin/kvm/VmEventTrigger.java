@@ -1,5 +1,11 @@
 package io.kestra.plugin.kvm;
 
+import java.time.Duration;
+import java.util.Optional;
+
+import org.libvirt.Connect;
+import org.libvirt.Domain;
+
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.conditions.ConditionContext;
@@ -11,15 +17,11 @@ import io.kestra.core.models.triggers.TriggerContext;
 import io.kestra.core.models.triggers.TriggerOutput;
 import io.kestra.core.models.triggers.TriggerService;
 import io.kestra.core.runners.RunContext;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.Duration;
-import java.util.Optional;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.libvirt.Connect;
-import org.libvirt.Domain;
 
 /**
  * Trigger that polls a KVM Virtual Machine state.
@@ -51,7 +53,7 @@ import org.libvirt.Domain;
                     name: kestra-worker-nodes
                     interval: PT1M
                 """
-            )
+        )
     }
 )
 @Schema(
@@ -92,9 +94,9 @@ public class VmEventTrigger extends AbstractTrigger implements PollingTriggerInt
             String currentState = domain.getInfo().state.toString();
 
             var output = Output.builder()
-                    .name(rName)
-                    .state(currentState)
-                    .build();
+                .name(rName)
+                .state(currentState)
+                .build();
             Execution execution = TriggerService.generateExecution(this, conditionContext, context, output);
 
             return Optional.of(execution);
