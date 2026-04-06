@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Task to create a KVM Virtual Machine.
@@ -89,6 +90,7 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
         description = "VM name used for lookup and definition; should match the <name> element in the XML."
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> name;
 
     @Schema(
@@ -96,6 +98,7 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
         description = "Full libvirt domain XML template rendered with flow variables before being sent to defineXML."
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> xmlDefinition;
 
     @Builder.Default
@@ -103,6 +106,7 @@ public class CreateVm extends AbstractKvmTask implements RunnableTask<CreateVm.O
         title = "Start after define",
         description = "If true, boots the VM after definition when it isn't already running. Default false."
     )
+    @PluginProperty(group = "destination")
     private Property<Boolean> startAfterCreate = Property.ofValue(false);
 
     @Override

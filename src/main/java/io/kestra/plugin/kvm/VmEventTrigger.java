@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Trigger that polls a KVM Virtual Machine state.
@@ -67,12 +68,14 @@ public class VmEventTrigger extends AbstractTrigger implements PollingTriggerInt
         title = "Poll interval",
         description = "Time between state checks. Default PT1M."
     )
+    @PluginProperty(group = "execution")
     private Duration interval = Duration.ofMinutes(1);
 
     @Schema(
         title = "Libvirt URI",
         description = "Connection URI rendered before use; required to reach the hypervisor."
     )
+    @PluginProperty(group = "advanced")
     protected Property<String> uri;
 
     @Schema(
@@ -80,6 +83,7 @@ public class VmEventTrigger extends AbstractTrigger implements PollingTriggerInt
         description = "Name of the libvirt domain to monitor."
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> name;
 
     @Override

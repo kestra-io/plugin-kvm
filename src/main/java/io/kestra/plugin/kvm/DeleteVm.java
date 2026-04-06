@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Task to delete (undefine) a KVM Virtual Machine.
@@ -60,6 +61,7 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
         description = "Name of the libvirt domain to delete."
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> name;
 
     @Builder.Default
@@ -67,6 +69,7 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
         title = "Delete storage volumes",
         description = "If true, deletes volumes referenced in the domain XML by pool/name before undefine. Default false."
     )
+    @PluginProperty(group = "destination")
     private Property<Boolean> deleteStorage = Property.ofValue(false);
 
     @Builder.Default
@@ -74,6 +77,7 @@ public class DeleteVm extends AbstractKvmTask implements RunnableTask<DeleteVm.O
         title = "Fail if missing",
         description = "If true, throws when the domain does not exist; if false, logs a warning and continues. Default true."
     )
+    @PluginProperty(group = "reliability")
     private Property<Boolean> failIfNotFound = Property.ofValue(true);
 
     @Override

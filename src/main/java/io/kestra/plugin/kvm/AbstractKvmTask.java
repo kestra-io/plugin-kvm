@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Abstract task for KVM operations.
@@ -29,6 +30,7 @@ import lombok.experimental.SuperBuilder;
 @ToString
 public abstract class AbstractKvmTask extends Task {
     @Schema(title = "Libvirt URI")
+    @PluginProperty(group = "advanced")
     protected Property<String> uri;
 
     /**
