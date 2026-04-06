@@ -13,6 +13,7 @@ import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Task to update a KVM Virtual Machine configuration.
@@ -83,12 +84,14 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
         title = "Domain name",
         description = "Domain to redefine; should match the <name> in the XML."
     )
+    @PluginProperty(group = "destination")
     private Property<String> name;
 
     @Schema(
         title = "Domain XML",
         description = "Libvirt domain XML template rendered with flow variables before defineXML; UUID is injected when absent."
     )
+    @PluginProperty(group = "advanced")
     private Property<String> xmlDefinition;
 
     @Builder.Default
@@ -96,6 +99,7 @@ public class UpdateVm extends AbstractKvmTask implements RunnableTask<UpdateVm.O
         title = "Restart after update",
         description = "If true, destroys then starts the domain when it is RUNNING or PAUSED to apply changes. Default false."
     )
+    @PluginProperty(group = "advanced")
     private Property<Boolean> restart = Property.ofValue(false);
 
     @Override

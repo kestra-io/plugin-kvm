@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Task to start a KVM Virtual Machine.
@@ -56,6 +57,7 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
         description = "Name of the libvirt domain to start."
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> name;
 
     @Builder.Default
@@ -63,6 +65,7 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
         title = "Wait for RUNNING",
         description = "If true, polls domain state until RUNNING or timeout. Default false."
     )
+    @PluginProperty(group = "execution")
     private Property<Boolean> waitForRunning = Property.ofValue(false);
 
     @Builder.Default
@@ -70,6 +73,7 @@ public class StartVm extends AbstractKvmTask implements RunnableTask<StartVm.Out
         title = "Max wait duration",
         description = "Maximum time to wait for RUNNING when waitForRunning is true. Default PT60S."
     )
+    @PluginProperty(group = "execution")
     private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override

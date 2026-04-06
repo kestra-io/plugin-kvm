@@ -14,6 +14,7 @@ import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Task to list KVM Virtual Machines.
@@ -43,6 +44,7 @@ import lombok.experimental.SuperBuilder;
 public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Output> {
 
     @Schema(title = "Status Filter")
+    @PluginProperty(group = "processing")
     private Property<String> statusFilter;
 
     @Override

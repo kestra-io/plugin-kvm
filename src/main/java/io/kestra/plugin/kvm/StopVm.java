@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Task to stop a KVM Virtual Machine.
@@ -55,6 +56,7 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
         description = "Name of the libvirt domain to stop."
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> name;
 
     @Builder.Default
@@ -62,6 +64,7 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
         title = "Force power off",
         description = "If true, calls destroy (hard power off); otherwise uses graceful shutdown. Default false."
     )
+    @PluginProperty(group = "reliability")
     private Property<Boolean> force = Property.ofValue(false);
 
     @Builder.Default
@@ -69,6 +72,7 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
         title = "Wait for SHUTOFF",
         description = "If true, polls until the domain is SHUTOFF or timeout. Default false."
     )
+    @PluginProperty(group = "execution")
     private Property<Boolean> waitForStopped = Property.ofValue(false);
 
     @Builder.Default
@@ -76,6 +80,7 @@ public class StopVm extends AbstractKvmTask implements RunnableTask<StopVm.Outpu
         title = "Max wait duration",
         description = "Maximum time to wait for SHUTOFF when waitForStopped is true. Default PT60S."
     )
+    @PluginProperty(group = "execution")
     private Property<Duration> timeToWait = Property.ofValue(Duration.ofSeconds(60));
 
     @Override
