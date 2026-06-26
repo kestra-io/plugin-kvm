@@ -40,7 +40,10 @@ import io.kestra.core.models.annotations.PluginProperty;
         )
     }
 )
-@Schema(title = "List VMs")
+@Schema(
+    title = "List VMs",
+    description = "Lists the KVM/Libvirt virtual machines, optionally filtered by status."
+)
 public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Output> {
 
     @Schema(title = "Status Filter")
@@ -96,6 +99,7 @@ public class ListVms extends AbstractKvmTask implements RunnableTask<ListVms.Out
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
+        @Schema(title = "The listed virtual machines")
         private java.util.List<VmEntry> vms;
     }
 
