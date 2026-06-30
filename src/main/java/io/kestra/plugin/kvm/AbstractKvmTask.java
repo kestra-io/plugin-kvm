@@ -4,6 +4,7 @@ import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 
+import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
@@ -14,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import io.kestra.core.models.annotations.PluginProperty;
 
 /**
  * Abstract task for KVM operations.
@@ -30,7 +30,8 @@ import io.kestra.core.models.annotations.PluginProperty;
 @ToString
 public abstract class AbstractKvmTask extends Task {
     @Schema(title = "Libvirt URI")
-    @PluginProperty(group = "advanced")
+    @PluginProperty(group = "advanced", secret = true)
+    @ToString.Exclude
     protected Property<String> uri;
 
     /**
