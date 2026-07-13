@@ -31,8 +31,15 @@ class LibvirtXmlParser {
     static Map<String, List<String>> getVolumesGroupedByPool(Domain domain) throws Exception {
         String xml = domain.getXMLDesc(0);
 
-        Document doc = DocumentBuilderFactory.newInstance()
-            .newDocumentBuilder()
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        dbf.setXIncludeAware(false);
+        dbf.setExpandEntityReferences(false);
+
+        Document doc = dbf.newDocumentBuilder()
             .parse(new InputSource(new StringReader(xml)));
 
         XPath xpathFactory = XPathFactory.newInstance().newXPath();
