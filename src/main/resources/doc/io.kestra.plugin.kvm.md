@@ -4,7 +4,7 @@ Manage KVM virtual machines through the Libvirt API from Kestra flows: create, s
 
 ## Connection
 
-Tasks connect to a Libvirt daemon through a connection URI (for example `qemu:///system` for the local host or `qemu+ssh://user@host/system` for a remote host). Provide any required credentials as [secrets](https://kestra.io/docs/concepts/secret) and share connection settings with [plugin defaults](https://kestra.io/docs/workflow-components/plugin-defaults).
+Tasks connect to a Libvirt daemon through a connection URI (for example `qemu:///system` for the local host or `qemu+ssh://user@host/system` for a remote host). Provide any required credentials as [secrets](https://kestra.io/docs/concepts/secret) and set connection settings on each task.
 
 ## Tasks
 
